@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 const RealtimeOneQuestionFormLayout = () => {
   const { setId } = useParams();
 
-  return <div>Technical Realtime One - {setId}</div>;
+  return <div>HR Realtime One - {setId}</div>;
 };
 
 export default RealtimeOneQuestionFormLayout;

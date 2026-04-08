@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 const QuestionFormLayout = () => {
   const { setId } = useParams();
 
-  return <div>Technical Question Form - {setId}</div>;
+  return <div>HR Question Form - {setId}</div>;
 };
 
 export default QuestionFormLayout;

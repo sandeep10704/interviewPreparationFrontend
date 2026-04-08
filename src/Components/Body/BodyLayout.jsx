@@ -1,11 +1,11 @@
-import React from 'react'
+import { Outlet } from "react-router-dom";
 
 const BodyLayout = () => {
   return (
     <div>
-      body
+      <Outlet />
     </div>
-  )
-}
+  );
+};
 
-export default BodyLayout
+export default BodyLayout;

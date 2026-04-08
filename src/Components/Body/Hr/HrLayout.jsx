@@ -1,24 +1,25 @@
 import { useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 
-const TechnicalLayout = () => {
+const HrLayout = () => {
   const navigate = useNavigate();
   const [selectedSet, setSelectedSet] = useState(null);
 
-  const sets = ["tech-201", "tech-202", "tech-203"];
+  // example set ids (you can fetch from backend)
+  const sets = ["hr-101", "hr-102", "hr-103"];
 
   const openPopup = (id) => {
     setSelectedSet(id);
   };
 
   const goTo = (type) => {
-    navigate(`/technical/${selectedSet}/${type}`);
+    navigate(`/hr/${selectedSet}/${type}`);
     setSelectedSet(null);
   };
 
   return (
     <div>
-      <h2>Technical Sets</h2>
+      <h2>HR Sets</h2>
 
       {sets.map((id) => (
         <button key={id} onClick={() => openPopup(id)}>
@@ -65,4 +66,4 @@ const TechnicalLayout = () => {
   );
 };
 
-export default TechnicalLayout;
+export default HrLayout;
