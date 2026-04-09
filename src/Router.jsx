@@ -28,98 +28,99 @@ import PlaygroundLayout from "./Components/Body/Coding/Playground/PlaygroundLayo
 import Login from "./Pages/Login";
 import Signup from "./Pages/Singup";
 
+
 const Router = createBrowserRouter([
-{
-path: "/",
-element: <Layout />,
-children: [
+    {
+        path: "/",
+        element: <Layout />,
+        children: [
 
-{
-element: <BodyLayout />,
-children: [
+            {
+                element: <BodyLayout />,
+                children: [
 
-{
-index: true,
-element: <HomeLayout />
-},
+                    {
+                        index: true,
+                        element: <HomeLayout />
+                    },
 
-{
-path: "profile",
-element: <ProfileLayout />
-},
+                    {
+                        path: "profile",
+                        element: <ProfileLayout />
+                    },
 
-// -------- HR --------
-{
-path: "hr",
-element: <HrLayout />,
-children: [
-{
-path: ":setId/question-form",
-element: <HrQuestionForm />
-},
-{
-path: ":setId/one-question",
-element: <HrOneQuestion />
-},
-{
-path: ":setId/realtime",
-element: <HrRealtime />
-},
-{
-path: ":setId/realtime-one",
-element: <HrRealtimeOne />
-}
-]
-},
+                    // -------- HR --------
+                    {
+                        path: "hr",
+                        element: <HrLayout />,
+                        children: [
+                            {
+                                path: ":setId/question-form",
+                                element: <HrQuestionForm />
+                            },
+                            {
+                                path: ":setId/one-question",
+                                element: <HrOneQuestion />
+                            },
+                            {
+                                path: ":setId/realtime",
+                                element: <HrRealtime />
+                            },
+                            {
+                                path: ":setId/realtime-one",
+                                element: <HrRealtimeOne />
+                            }
+                        ]
+                    },
 
-// -------- TECHNICAL --------
-{
-path: "technical",
-element: <TechnicalLayout />,
-children: [
-{
-path: ":setId/question-form",
-element: <TechQuestionForm />
-},
-{
-path: ":setId/one-question",
-element: <TechOneQuestion />
-},
-{
-path: ":setId/realtime",
-element: <TechRealtime />
-},
-{
-path: ":setId/realtime-one",
-element: <TechRealtimeOne />
-}
-]
-},
+                    // -------- TECHNICAL --------
+                    {
+                        path: "technical",
+                        element: <TechnicalLayout />,
+                        children: [
+                            {
+                                path: ":setId/question-form",
+                                element: <TechQuestionForm />
+                            },
+                            {
+                                path: ":setId/one-question",
+                                element: <TechOneQuestion />
+                            },
+                            {
+                                path: ":setId/realtime",
+                                element: <TechRealtime />
+                            },
+                            {
+                                path: ":setId/realtime-one",
+                                element: <TechRealtimeOne />
+                            }
+                        ]
+                    },
 
-{
-path: "coding",
-element: <CodingLayout />,
-children: [
-{ path: "normal", element: <NormalLayout /> },
-{ path: "realtime", element: <RealtimeLayout /> },
-{ path: "playground", element: <PlaygroundLayout /> }
-]
-}
+                    {
+                        path: "coding",
+                        element: <CodingLayout />,
+                        children: [
+                            { path: "normal", element: <NormalLayout /> },
+                            { path: "realtime", element: <RealtimeLayout /> },
+                            { path: "playground", element: <PlaygroundLayout /> }
+                        ]
+                    }
 
-]
-},
+                ]
+            },
 
-{
-path: "login",
-element: <Login />
-},
-{
-path: "signup",
-element: <Signup />
-}
+            {
+                path: "login",
+                element: <Login />
+            },
+            {
+                path: "signup",
+                element: <Signup />
+            }
 
-]
-}
+        ]
+    }
 ]);
 
 export default Router;
