@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { palette } from '../theme/palette';
-
+import { useDispatch } from "react-redux";
+import { loginWithEmail, loginWithGoogle } from "../store/authSlice";
+import { useNavigate } from "react-router-dom";
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -25,6 +27,8 @@ const Login = () => {
       }));
     }
   };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
@@ -43,12 +47,22 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (validateForm()) {
-      // Handle login logic here
-      console.log('Login data:', formData);
-      // You can add API call here
+      try {
+        await dispatch(
+          loginWithEmail({
+            email: formData.email,
+            password: formData.password
+          })
+        ).unwrap();
+
+        navigate("/");   // redirect to home
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -236,6 +250,15 @@ const Login = () => {
             onMouseOut={(e) => e.target.style.background = palette.accent}
           >
             Sign In
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              await dispatch(loginWithGoogle()).unwrap();
+              navigate("/");
+            }}
+          >
+            Sign in with Google
           </button>
         </form>
 
