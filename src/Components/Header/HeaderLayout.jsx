@@ -5,7 +5,7 @@ import NavLink from './Common/NavLink';
 
 const HeaderLayout = () => {
   const location = useLocation();
-  
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'HR Prep', path: '/hr' },

@@ -38,7 +38,8 @@ const Layout = () => {
         <Outlet />
       </main>
 
-      <FooterLayout />
+      {/* Hide footer on coding pages as requested */}
+      {!location.pathname.startsWith('/coding') && <FooterLayout />}
     </>
   );
 };
