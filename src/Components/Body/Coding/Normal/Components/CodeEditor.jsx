@@ -29,43 +29,63 @@ const CodeEditor = ({ code, setCode, language, setLanguage, onSubmit, onRun }) =
     }
   };
 
-  const handleEditorWillMount = (monaco) => {
-    monaco.editor.defineTheme('midnight-ai', themeConfig);
+  // Helper to register IntelliSense once
+  const registerIntellisense = (monaco) => {
+    if (window.__monaco_intellisense_registered) return;
+    window.__monaco_intellisense_registered = true;
 
-    // Registering custom completion suggestions to demonstrate control
     languages.forEach(lang => {
-       monaco.languages.registerCompletionItemProvider(lang === 'cpp' ? 'cpp' : lang, {
+      const monacoLang = lang === 'cpp' ? 'cpp' : lang;
+      
+      monaco.languages.registerCompletionItemProvider(monacoLang, {
         provideCompletionItems: (model, position) => {
           const suggestions = [
             {
               label: 'interview_hint',
               kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: '// Hint: Consider using a sliding window approach for O(n) performance.',
+              insertText: '// Hint: Consider using a ${1:sliding window} approach for ${2:O(n)} performance.',
+              insertTextRules: monaco.languages.CompletionItemProviderProperty.InsertAsSnippet,
               documentation: 'Standard optimization for subarray problems.',
-              range: {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: position.column - 1,
-                endColumn: position.column
-              }
+              detail: 'InterviewAI Snippet',
+              range: null 
+            },
+            {
+              label: 'binary_search',
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: [
+                'left, right = 0, len(${1:arr}) - 1',
+                'while left <= right:',
+                '    mid = (left + right) // 2',
+                '    if ${1:arr}[mid] == ${2:target}:',
+                '        return mid',
+                '    elif ${1:arr}[mid] < ${2:target}:',
+                '        left = mid + 1',
+                '    else:',
+                '        right = mid - 1'
+              ].join('\n'),
+              insertTextRules: monaco.languages.CompletionItemProviderProperty.InsertAsSnippet,
+              documentation: 'Classic Binary Search implementation.',
+              detail: 'InterviewAI Snippet',
+              range: null
             },
             {
               label: 'optimize_space',
               kind: monaco.languages.CompletionItemKind.Keyword,
               insertText: 'hash_map',
               documentation: 'Using a hash map can optimize search time to O(1).',
-               range: {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: position.column - 1,
-                endColumn: position.column
-              }
+              detail: 'Optimization Suggestion',
+              range: null
             }
           ];
           return { suggestions: suggestions };
         }
       });
     });
+  };
+
+  const handleEditorWillMount = (monaco) => {
+    monaco.editor.defineTheme('midnight-ai', themeConfig);
+    registerIntellisense(monaco);
   };
 
   const editorOptions = {
