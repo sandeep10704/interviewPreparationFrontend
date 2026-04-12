@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Typography } from '../../Common';
-import { FloatingCard } from './Common';
+import { Button, Typography } from '../../../Common';
+import FloatingCard from './FloatingCard';
 
 const HeroSection = () => {
   return (

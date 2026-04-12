@@ -1,6 +1,6 @@
 import React from 'react';
-import { Typography } from '../../Common';
-import { FeatureCard } from './Common';
+import { Typography } from '../../../Common';
+import FeatureCard from './FeatureCard';
 
 const CapabilitiesSection = () => {
   const capabilities = [

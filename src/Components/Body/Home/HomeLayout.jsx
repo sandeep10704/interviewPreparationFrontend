@@ -1,8 +1,8 @@
 import React from 'react';
-import HeroSection from './HeroSection';
-import CapabilitiesSection from './CapabilitiesSection';
-import WhyChooseUsSection from './WhyChooseUsSection';
-import ResumeAnalysisSection from './ResumeAnalysisSection';
+import HeroSection from './Components/HeroSection';
+import CapabilitiesSection from './Components/CapabilitiesSection';
+import WhyChooseUsSection from './Components/WhyChooseUsSection';
+import ResumeAnalysisSection from './Components/ResumeAnalysisSection';
 
 const HomeLayout = () => {
   return (
