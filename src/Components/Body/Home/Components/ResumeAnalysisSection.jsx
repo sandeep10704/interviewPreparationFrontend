@@ -1,20 +1,28 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Button, Typography } from "../../../Common";
 import { useDispatch, useSelector } from "react-redux";
 import { uploadFile } from "../../../../store/fileUploadSlice";
 
 const ResumeAnalysisSection = () => {
     const dispatch = useDispatch();
+    const fileInputRef = useRef(null);
+
     const { loading, error } = useSelector((state) => state.fileUpload);
 
     const handleFileChange = (e) => {
         console.log("FILE INPUT TRIGGERED");
-        const file = e.target.files[0];
+
+        const file = e.target.files?.[0];
         console.log("Selected file:", file);
 
         if (file) {
             dispatch(uploadFile(file));
         }
+    };
+
+    const handleClick = () => {
+        console.log("UPLOAD BOX CLICKED");
+        fileInputRef.current.click();
     };
 
     return (
@@ -36,17 +44,21 @@ const ResumeAnalysisSection = () => {
                     </Typography>
                 </div>
 
-                <div className="relative group p-12 border-2 border-dashed border-accent-border rounded-3xl hover:border-accent-main hover:bg-accent-main/5 transition-all bg-background/80 cursor-pointer shadow-xl">
-
-                    {/* IMPORTANT: z-50 so click works */}
+                {/* Upload Box */}
+                <div
+                    onClick={handleClick}
+                    className="relative group p-12 border-2 border-dashed border-accent-border rounded-3xl hover:border-accent-main hover:bg-accent-main/5 transition-all bg-background/80 cursor-pointer shadow-xl"
+                >
+                    {/* Hidden File Input */}
                     <input
+                        ref={fileInputRef}
                         type="file"
                         accept=".pdf,.doc,.docx"
                         onChange={handleFileChange}
-                        className="absolute inset-0 opacity-0 cursor-pointer z-50"
+                        className="hidden"
                     />
 
-                    <div className="space-y-4 relative z-0">
+                    <div className="space-y-4">
 
                         <div className="w-16 h-16 bg-accent-bg rounded-2xl flex items-center justify-center mx-auto text-accent-main group-hover:scale-110 transition-transform">
                             <svg
