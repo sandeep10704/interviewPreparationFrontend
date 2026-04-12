@@ -1,6 +1,6 @@
 import React from 'react';
-import { Typography } from '../../Common';
-import { ValueCard } from './Common';
+import { Typography } from '../../../Common';
+import ValueCard from './ValueCard';
 
 const WhyChooseUsSection = () => {
   const values = [

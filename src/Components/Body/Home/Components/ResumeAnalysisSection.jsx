@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Typography } from '../../Common';
+import { Button, Typography } from '../../../Common';
 
 const ResumeAnalysisSection = () => {
   return (
