@@ -27,10 +27,13 @@ export const uploadFile = createAsyncThunk(
       const formData = new FormData();
       formData.append("file", file);
 
-      console.log("Uploading to:", "https://aiinterviewpreparation.onrender.com/api/resume/");
+      console.log(
+        "Uploading to:",
+        "https://aiinterviewpreparation.onrender.com/api/resume/"
+      );
 
       const response = await axios.post(
-        "https://aiinterviewpreparation.onrender.com/api/resume/",
+        "https://ai-interview-preparation-three.vercel.app/resume/",
         formData,
         {
           headers: {
@@ -51,8 +54,11 @@ export const uploadFile = createAsyncThunk(
       console.log("UPLOAD ERROR DATA:", error?.response?.data);
       console.log("UPLOAD ERROR HEADERS:", error?.response?.headers);
 
+      // FIXED HERE
       return thunkAPI.rejectWithValue(
-        error?.response?.data || error.message
+        error?.response?.data?.detail ||
+        error?.response?.data ||
+        error.message
       );
     }
   }
