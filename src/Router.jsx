@@ -1,124 +1,123 @@
+import React, { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "./Layout";
+import Loading from "./Components/Common/Loading";
 
-// layouts
-import BodyLayout from "./Components/Body/BodyLayout";
-import HomeLayout from "./Components/Body/Home/HomeLayout";
-import HrLayout from "./Components/Body/Hr/HrLayout";
-import TechnicalLayout from "./Components/Body/Technical/TechnicalLayout";
-import CodingLayout from "./Components/Body/Coding/CodingLayout";
-import ProfileLayout from "./Components/Body/Profile/ProfileLayout";
 
-// HR children
-import HrQuestionForm from "./Components/Body/Hr/QuestionForm/QuestionFormLayout";
-import HrOneQuestion from "./Components/Body/Hr/OneQuestionForm/OneQuestionFormLayout";
-import HrRealtime from "./Components/Body/Hr/RealtimeQuestionForm/RealtimeQuestionFormLayout";
-import HrRealtimeOne from "./Components/Body/Hr/RealtimeOneQuestionForm/RealtimeOneQuestionFormLayout";
+const BodyLayout = lazy(() => import("./Components/Body/BodyLayout"));
+const HomeLayout = lazy(() => import("./Components/Body/Home/HomeLayout"));
+const HrLayout = lazy(() => import("./Components/Body/Hr/HrLayout"));
+const TechnicalLayout = lazy(() => import("./Components/Body/Technical/TechnicalLayout"));
+const CodingLayout = lazy(() => import("./Components/Body/Coding/CodingLayout"));
+const ProfileLayout = lazy(() => import("./Components/Body/Profile/ProfileLayout"));
 
-// Technical children
-import TechQuestionForm from "./Components/Body/Technical/QuestionForm/QuestionFormLayout";
-import TechOneQuestion from "./Components/Body/Technical/OneQuestionForm/OneQuestionFormLayout";
-import TechRealtime from "./Components/Body/Technical/RealtimeQuestionForm/RealtimeQuestionFormLayout";
-import TechRealtimeOne from "./Components/Body/Technical/RealtimeOneQuestionForm/RealtimeOneQuestionFormLayout";
 
-import NormalLayout from "./Components/Body/Coding/Normal/NormalLayout";
-import RealtimeLayout from "./Components/Body/Coding/Realtime/RealtimeLayout";
-import PlaygroundLayout from "./Components/Body/Coding/Playground/PlaygroundLayout";
-// auth
-import Login from "./Pages/Login";
-import Signup from "./Pages/Singup";
+const HrQuestionForm = lazy(() => import("./Components/Body/Hr/QuestionForm/QuestionFormLayout"));
+const HrOneQuestion = lazy(() => import("./Components/Body/Hr/OneQuestionForm/OneQuestionFormLayout"));
+const HrRealtime = lazy(() => import("./Components/Body/Hr/RealtimeQuestionForm/RealtimeQuestionFormLayout"));
+const HrRealtimeOne = lazy(() => import("./Components/Body/Hr/RealtimeOneQuestionForm/RealtimeOneQuestionFormLayout"))
 
+const TechQuestionForm = lazy(() => import("./Components/Body/Technical/QuestionForm/QuestionFormLayout"));
+const TechOneQuestion = lazy(() => import("./Components/Body/Technical/OneQuestionForm/OneQuestionFormLayout"));
+const TechRealtime = lazy(() => import("./Components/Body/Technical/RealtimeQuestionForm/RealtimeQuestionFormLayout"));
+const TechRealtimeOne = lazy(() => import("./Components/Body/Technical/RealtimeOneQuestionForm/RealtimeOneQuestionFormLayout"));
+
+
+const NormalLayout = lazy(() => import("./Components/Body/Coding/Normal/NormalLayout"));
+const RealtimeLayout = lazy(() => import("./Components/Body/Coding/Realtime/RealtimeLayout"));
+const PlaygroundLayout = lazy(() => import("./Components/Body/Coding/Playground/PlaygroundLayout"));
+
+
+const Login = lazy(() => import("./Pages/Login"));
+const Signup = lazy(() => import("./Pages/Singup"));
+
+const suspenseWrapper = (element) => (
+    <Suspense fallback={<Loading />}>
+        {element}
+    </Suspense>
+);
 
 const Router = createBrowserRouter([
     {
         path: "/",
         element: <Layout />,
         children: [
-
             {
-                element: <BodyLayout />,
+                element: suspenseWrapper(<BodyLayout />),
                 children: [
-
                     {
                         index: true,
-                        element: <HomeLayout />
+                        element: suspenseWrapper(<HomeLayout />)
                     },
-
                     {
                         path: "profile",
-                        element: <ProfileLayout />
+                        element: suspenseWrapper(<ProfileLayout />)
                     },
-
                     // -------- HR --------
                     {
                         path: "hr",
-                        element: <HrLayout />,
+                        element: suspenseWrapper(<HrLayout />),
                         children: [
                             {
                                 path: ":setId/question-form",
-                                element: <HrQuestionForm />
+                                element: suspenseWrapper(<HrQuestionForm />)
                             },
                             {
                                 path: ":setId/one-question",
-                                element: <HrOneQuestion />
+                                element: suspenseWrapper(<HrOneQuestion />)
                             },
                             {
                                 path: ":setId/realtime",
-                                element: <HrRealtime />
+                                element: suspenseWrapper(<HrRealtime />)
                             },
                             {
                                 path: ":setId/realtime-one",
-                                element: <HrRealtimeOne />
+                                element: suspenseWrapper(<HrRealtimeOne />)
                             }
                         ]
                     },
-
                     // -------- TECHNICAL --------
                     {
                         path: "technical",
-                        element: <TechnicalLayout />,
+                        element: suspenseWrapper(<TechnicalLayout />),
                         children: [
                             {
                                 path: ":setId/question-form",
-                                element: <TechQuestionForm />
+                                element: suspenseWrapper(<TechQuestionForm />)
                             },
                             {
                                 path: ":setId/one-question",
-                                element: <TechOneQuestion />
+                                element: suspenseWrapper(<TechOneQuestion />)
                             },
                             {
                                 path: ":setId/realtime",
-                                element: <TechRealtime />
+                                element: suspenseWrapper(<TechRealtime />)
                             },
                             {
                                 path: ":setId/realtime-one",
-                                element: <TechRealtimeOne />
+                                element: suspenseWrapper(<TechRealtimeOne />)
                             }
                         ]
                     },
-
                     {
                         path: "coding",
-                        element: <CodingLayout />,
+                        element: suspenseWrapper(<CodingLayout />),
                         children: [
-                            { path: "normal", element: <NormalLayout /> },
-                            { path: "realtime", element: <RealtimeLayout /> },
-                            { path: "playground", element: <PlaygroundLayout /> }
+                            { path: "normal", element: suspenseWrapper(<NormalLayout />) },
+                            { path: "realtime", element: suspenseWrapper(<RealtimeLayout />) },
+                            { path: "playground", element: suspenseWrapper(<PlaygroundLayout />) }
                         ]
                     }
-
                 ]
             },
-
             {
                 path: "login",
-                element: <Login />
+                element: suspenseWrapper(<Login />)
             },
             {
                 path: "signup",
-                element: <Signup />
+                element: suspenseWrapper(<Signup />)
             }
-
         ]
     }
 ]);
