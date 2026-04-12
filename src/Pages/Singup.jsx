@@ -4,7 +4,8 @@ import {
   Button, 
   Input, 
   Typography, 
-  Card 
+  Card,
+  TermsModal
 } from '../Components/Common';
 
 const Singup = () => {
@@ -12,16 +13,18 @@ const Singup = () => {
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    agreedToTerms: false
   });
 
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
     
     if (errors[name]) {
@@ -53,6 +56,10 @@ const Singup = () => {
 
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (!formData.agreedToTerms) {
+      newErrors.agreedToTerms = 'You must agree to the Terms and Conditions';
     }
 
     setErrors(newErrors);
@@ -149,7 +156,39 @@ const Singup = () => {
             error={errors.confirmPassword}
           />
 
-          <Button type="submit" className="w-full !mt-8">
+          <div className="flex flex-col gap-2 mt-4">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="relative mt-0.5">
+                <input 
+                  type="checkbox"
+                  name="agreedToTerms"
+                  checked={formData.agreedToTerms}
+                  onChange={handleChange}
+                  className="w-4 h-4 rounded border border-border-main bg-white/5 appearance-none checked:bg-accent-main checked:border-accent-main transition-all cursor-pointer"
+                />
+                {formData.agreedToTerms && (
+                  <svg className="absolute inset-0 w-4 h-4 text-black p-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                )}
+              </div>
+              <Typography variant="bodySmall" className="text-left !mb-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                I agree to the{' '}
+                <button 
+                  type="button" 
+                  onClick={() => setIsTermsOpen(true)}
+                  className="text-accent-main hover:underline font-bold"
+                >
+                  Terms and Conditions
+                </button>
+              </Typography>
+            </label>
+            {errors.agreedToTerms && (
+              <p className="text-red-500 text-[10px] font-bold uppercase tracking-wider">{errors.agreedToTerms}</p>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full !mt-6 shadow-[0_8px_20px_-8px_rgba(50,208,200,0.4)]">
             Create Account
           </Button>
         </form>
@@ -163,6 +202,12 @@ const Singup = () => {
           </Typography>
         </div>
       </Card>
+
+      <TermsModal 
+        isOpen={isTermsOpen} 
+        onClose={() => setIsTermsOpen(false)}
+        onAccept={() => setFormData(p => ({ ...p, agreedToTerms: true }))}
+      />
     </div>
   );
 };
