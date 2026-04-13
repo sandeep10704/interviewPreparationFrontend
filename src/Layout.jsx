@@ -29,19 +29,17 @@ const Layout = () => {
   if (hideLayout) {
     return <Outlet />;
   }
+return (
+  <>
+    <HeaderLayout />
 
-  return (
-    <>
-      <HeaderLayout />
+    <main className="min-h-[80vh] max-w-5xl mx-auto px-6 w-full">
+      <Outlet />
+    </main>
 
-      <main style={{ minHeight: "80vh" }}>
-        <Outlet />
-      </main>
-
-      {/* Hide footer on coding pages as requested */}
-      {!location.pathname.startsWith('/coding') && <FooterLayout />}
-    </>
-  );
+    {!location.pathname.startsWith('/coding') && <FooterLayout />}
+  </>
+);
 };
 
 export default Layout;
