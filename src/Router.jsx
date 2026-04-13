@@ -101,12 +101,19 @@ const Router = createBrowserRouter([
                     },
                     {
                         path: "coding",
-                        element: suspenseWrapper(<CodingLayout />),
-                        children: [
-                            { path: "normal", element: suspenseWrapper(<NormalLayout />) },
-                            { path: "realtime", element: suspenseWrapper(<RealtimeLayout />) },
-                            { path: "playground", element: suspenseWrapper(<PlaygroundLayout />) }
-                        ]
+                        element: suspenseWrapper(<CodingLayout />)
+                    },
+                    {
+                        path: "coding/normal/:setId",
+                        element: suspenseWrapper(<NormalLayout />)
+                    },
+                    {
+                        path: "coding/realtime/:setId",
+                        element: suspenseWrapper(<RealtimeLayout />)
+                    },
+                    {
+                        path: "coding/playground",
+                        element: suspenseWrapper(<PlaygroundLayout />)
                     }
                 ]
             },
