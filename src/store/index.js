@@ -4,6 +4,7 @@ import fileUploadReducer from "./fileUploadSlice";
 import codingSetReducer from "./codingSetSlice";
 import codingExecutionReducer from "./codingExecutionSlice";
 import codingQuestionReducer from "./codingQuestionSlice";
+import playgroundReducer from "./playgroundSlice";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     fileUpload: fileUploadReducer,
     codingSets: codingSetReducer,
     codingExecution: codingExecutionReducer,
-    codingQuestions: codingQuestionReducer
+    codingQuestions: codingQuestionReducer,
+    playground: playgroundReducer
   }
 });
