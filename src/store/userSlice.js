@@ -17,11 +17,14 @@ export const getUser = createAsyncThunk(
   "user/get",
   async (_, { rejectWithValue }) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
 
-      if (!token) {
+      const user = auth.currentUser;
+
+      if (!user) {
         throw new Error("User not logged in");
       }
+
+      const token = await user.getIdToken();
 
       const response = await axios.get(
         "https://ai-interview-preparation-three.vercel.app/user",
