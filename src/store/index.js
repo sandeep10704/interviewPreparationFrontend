@@ -6,6 +6,7 @@ import codingExecutionReducer from "./codingExecutionSlice";
 import codingQuestionReducer from "./codingQuestionSlice";
 import playgroundReducer from "./playgroundSlice";
 import codingReducer from "./codingSlice";
+import userReducer from "./userSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -14,6 +15,7 @@ export const store = configureStore({
     codingExecution: codingExecutionReducer,
     codingQuestions: codingQuestionReducer,
     playground: playgroundReducer,
-    coding: codingReducer
+    coding: codingReducer,
+    user: userReducer
   }
 });
