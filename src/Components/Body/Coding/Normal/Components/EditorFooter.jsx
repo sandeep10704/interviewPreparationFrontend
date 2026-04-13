@@ -12,22 +12,26 @@ const EditorFooter = ({ onRun, onSubmit }) => {
         </Typography>
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Button 
           variant="outline" 
-          size="sm" 
+          size="md" 
           onClick={onRun}
-          className="!rounded-md !py-1 !px-3 flex items-center gap-2 !text-[10px] font-bold bg-white/5 hover:bg-white/10 border-white/5 hover:border-white/10 transition-all active:scale-95"
+          className="!rounded-lg !py-2.5 !px-6 flex items-center gap-2 !text-xs font-black bg-white/5 hover:bg-white/10 border-white/10 hover:border-accent-main/50 transition-all active:scale-95 text-text-main group"
         >
-          <PlayIcon />
+          <div className="text-accent-main group-hover:scale-110 transition-transform">
+            <PlayIcon />
+          </div>
           RUN
         </Button>
         <Button 
-          size="sm" 
+          size="md" 
           onClick={onSubmit}
-          className="!rounded-md !py-1 !px-4 flex items-center gap-2 !text-[10px] font-bold shadow-lg shadow-accent-main/10 hover:shadow-accent-main/20 transition-all active:scale-95"
+          className="!rounded-lg !py-2.5 !px-8 flex items-center gap-2 !text-xs font-black shadow-[0_0_20px_rgba(50,208,200,0.2)] hover:shadow-[0_0_30px_rgba(50,208,200,0.4)] transition-all active:scale-95 bg-accent-main text-black group"
         >
-          <SendIcon />
+          <div className="group-hover:translate-x-0.5 transition-transform">
+            <SendIcon />
+          </div>
           SUBMIT
         </Button>
       </div>
