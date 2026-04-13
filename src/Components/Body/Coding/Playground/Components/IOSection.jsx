@@ -67,31 +67,33 @@ const IOSection = ({ stdin, setStdin, result, loading }) => {
             className="w-full h-full bg-transparent p-6 text-[11px] font-mono text-text-main outline-none placeholder:text-text-subtle/20 resize-none selection:bg-accent-main/20 focus:bg-white/[0.01] transition-all"
           />
         ) : (
-          <div className="w-full h-full overflow-y-auto p-6 custom-scrollbar bg-[#030E17]/30">
+          <div className="w-full h-full overflow-y-auto p-6 custom-scrollbar">
             {loading ? (
                <div className="flex flex-col items-center justify-center h-full gap-4 opacity-40">
                   <Loading size="sm" />
                   <Typography className="text-[10px] font-black tracking-[0.2em] uppercase text-center animate-pulse">Requesting instance output...</Typography>
                </div>
             ) : result ? (
-               <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
-                  {result.stdout && (
-                    <div className="space-y-2">
-                       <Typography className="text-[9px] font-black text-accent-main/50 uppercase tracking-widest">stdout</Typography>
-                       <pre className="text-[11px] font-mono text-text-main leading-relaxed break-all whitespace-pre-wrap selection:bg-accent-main/30">{result.stdout}</pre>
-                    </div>
-                  )}
+               <div className="animate-in fade-in slide-in-from-left-1 duration-300 font-mono text-left w-full flex flex-col items-start px-2">
+                  <pre className="text-[13px] text-white leading-relaxed break-all whitespace-pre-wrap selection:bg-white/20 text-left w-full">
+                     {result.stdout || result.output || result.data || (typeof result === 'string' && result)}
+                  </pre>
+                  
                   {result.stderr && (
-                    <div className="space-y-2">
-                       <Typography className="text-[9px] font-black text-error/50 uppercase tracking-widest">stderr</Typography>
-                       <pre className="text-[11px] font-mono text-error leading-relaxed break-all whitespace-pre-wrap selection:bg-error/30">{result.stderr}</pre>
+                    <div className="mt-4 pt-4 border-t border-error/20">
+                       <pre className="text-[13px] text-error leading-relaxed break-all whitespace-pre-wrap selection:bg-error/30">{result.stderr}</pre>
                     </div>
                   )}
-                  {!result.stdout && !result.stderr && (
-                     <div className="flex flex-col items-center justify-center h-full py-10 opacity-30 italic">
-                        <Typography className="text-xs font-mono">Process finished with exit code 0</Typography>
+                  
+                  <div className="mt-8 space-y-1">
+                     <div className="text-[12px] text-[#A6E22E] font-bold tracking-tight">
+                        ...Program finished with exit code 0
                      </div>
-                  )}
+                     <div className="text-[12px] text-[#A6E22E] font-bold tracking-tight flex items-center gap-1">
+                        <span>Press ENTER to exit console.</span>
+                        <div className="w-2.5 h-4 bg-white/80 animate-pulse"></div>
+                     </div>
+                  </div>
                </div>
             ) : (
                <div className="h-full flex flex-col items-center justify-center opacity-10 grayscale group">
