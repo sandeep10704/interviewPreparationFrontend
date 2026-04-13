@@ -33,7 +33,7 @@ return (
   <>
     <HeaderLayout />
 
-    <main className="min-h-[80vh] max-w-5xl mx-auto px-6 w-full">
+    <main className="min-h-[80vh] w-full overflow-x-hidden">
       <Outlet />
     </main>
 
