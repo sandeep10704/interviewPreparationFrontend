@@ -6,7 +6,17 @@ const initialState = {
   loading: false,
   data: null,
   selectedSet: null,
-  error: null
+  error: null,
+
+  // editor state
+  currentIndex: 0,
+  codesByQuestion: {},
+  language: "python",
+
+  // results
+  results: [],
+  showResults: false,
+  isSubmission: false
 };
 
 // ===============================
@@ -34,12 +44,11 @@ export const getCodingSets = createAsyncThunk(
       );
 
       return response.data;
-
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error?.response?.data?.detail ||
-        error?.response?.data ||
-        error.message
+          error?.response?.data ||
+          error.message
       );
     }
   }
@@ -70,12 +79,11 @@ export const getCodingSetById = createAsyncThunk(
       );
 
       return response.data;
-
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error?.response?.data?.detail ||
-        error?.response?.data ||
-        error.message
+          error?.response?.data ||
+          error.message
       );
     }
   }
@@ -84,7 +92,94 @@ export const getCodingSetById = createAsyncThunk(
 const codingSetSlice = createSlice({
   name: "codingSets",
   initialState,
-  reducers: {},
+  reducers: {
+    // ===============================
+    // SET CODE (SAVE PER QUESTION)
+    // ===============================
+    setCode: (state, action) => {
+      const index = state.currentIndex;
+      state.codesByQuestion[index] = action.payload;
+    },
+
+    setLanguage: (state, action) => {
+      state.language = action.payload;
+    },
+
+    // ===============================
+    // NEXT QUESTION
+    // ===============================
+    nextQuestion: (state) => {
+      const total = state.selectedSet?.questions?.length || 0;
+
+      if (state.currentIndex < total - 1) {
+        state.currentIndex += 1;
+
+        state.results = [];
+        state.showResults = false;
+        state.isSubmission = false;
+      }
+    },
+
+    // ===============================
+    // PREVIOUS QUESTION
+    // ===============================
+    prevQuestion: (state) => {
+      if (state.currentIndex > 0) {
+        state.currentIndex -= 1;
+
+        state.results = [];
+        state.showResults = false;
+        state.isSubmission = false;
+      }
+    },
+
+    // ===============================
+    // RUN CODE
+    // ===============================
+    runCode: (state) => {
+      const question =
+        state.selectedSet?.questions?.[state.currentIndex];
+
+      if (!question) return;
+
+      state.showResults = true;
+      state.isSubmission = false;
+
+      state.results = question.test_cases
+        ?.slice(0, 3)
+        .map((tc, i) => ({
+          id: i,
+          passed: Math.random() > 0.2,
+          userOutput:
+            Math.random() > 0.4
+              ? tc.output
+              : "Error: Output mismatch"
+        }));
+    },
+
+    // ===============================
+    // SUBMIT CODE
+    // ===============================
+    submitCode: (state) => {
+      const question =
+        state.selectedSet?.questions?.[state.currentIndex];
+
+      if (!question) return;
+
+      state.showResults = true;
+      state.isSubmission = true;
+
+      state.results = question.test_cases?.map((tc, i) => ({
+        id: i,
+        passed: Math.random() > 0.3,
+        userOutput:
+          Math.random() > 0.5
+            ? tc.output
+            : "Error: Output mismatch"
+      }));
+    }
+  },
+
   extraReducers: (builder) => {
     builder
 
@@ -114,6 +209,22 @@ const codingSetSlice = createSlice({
       .addCase(getCodingSetById.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedSet = action.payload;
+
+        state.currentIndex = 0;
+
+        const questions = action.payload?.questions || [];
+
+        state.codesByQuestion = {};
+
+        // initialize code for each question
+        questions.forEach((q, index) => {
+          state.codesByQuestion[index] =
+            q.function_signature + "\n    ";
+        });
+
+        state.results = [];
+        state.showResults = false;
+        state.isSubmission = false;
       })
       .addCase(getCodingSetById.rejected, (state, action) => {
         state.loading = false;
@@ -121,5 +232,14 @@ const codingSetSlice = createSlice({
       });
   }
 });
+
+export const {
+  setCode,
+  setLanguage,
+  nextQuestion,
+  prevQuestion,
+  runCode,
+  submitCode
+} = codingSetSlice.actions;
 
 export default codingSetSlice.reducer;

@@ -3,8 +3,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
+  signOut
 } from "firebase/auth";
 
 import { auth, googleProvider } from "../firebase";
@@ -15,12 +14,24 @@ const initialState = {
   error: null
 };
 
+// helper (VERY IMPORTANT)
+const serializeUser = (user) => {
+  if (!user) return null;
+
+  return {
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+    photoURL: user.photoURL
+  };
+};
+
 // Google Login
 export const loginWithGoogle = createAsyncThunk(
   "auth/google",
   async () => {
     const res = await signInWithPopup(auth, googleProvider);
-    return res.user;
+    return serializeUser(res.user);
   }
 );
 
@@ -29,7 +40,7 @@ export const loginWithEmail = createAsyncThunk(
   "auth/login",
   async ({ email, password }) => {
     const res = await signInWithEmailAndPassword(auth, email, password);
-    return res.user;
+    return serializeUser(res.user);
   }
 );
 
@@ -38,7 +49,7 @@ export const signup = createAsyncThunk(
   "auth/signup",
   async ({ email, password }) => {
     const res = await createUserWithEmailAndPassword(auth, email, password);
-    return res.user;
+    return serializeUser(res.user);
   }
 );
 
@@ -56,7 +67,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = action.payload;
+      state.user = serializeUser(action.payload);
     }
   },
   extraReducers: (builder) => {

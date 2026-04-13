@@ -5,8 +5,19 @@ import { PlayIcon, SendIcon, RotateIcon, SettingsIcon } from './Icons';
 import EditorHeader from './EditorHeader';
 import EditorFooter from './EditorFooter';
 
-const CodeEditor = ({ code, setCode, language, setLanguage, onSubmit, onRun }) => {
+const CodeEditor = ({
+  code,
+  setCode,
+  language,
+  setLanguage,
+  onSubmit,
+  onRun,
+  runLoading,
+  submitLoading
+}) => {
+
   const languages = ['python', 'javascript', 'java', 'cpp'];
+  const loading = runLoading || submitLoading;
 
   const themeConfig = {
     base: 'vs-dark',
@@ -29,25 +40,24 @@ const CodeEditor = ({ code, setCode, language, setLanguage, onSubmit, onRun }) =
     }
   };
 
-  // Helper to register IntelliSense once
   const registerIntellisense = (monaco) => {
     if (window.__monaco_intellisense_registered) return;
     window.__monaco_intellisense_registered = true;
 
     languages.forEach(lang => {
       const monacoLang = lang === 'cpp' ? 'cpp' : lang;
-      
+
       monaco.languages.registerCompletionItemProvider(monacoLang, {
-        provideCompletionItems: (model, position) => {
+        provideCompletionItems: () => {
           const suggestions = [
             {
               label: 'interview_hint',
               kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: '// Hint: Consider using a ${1:sliding window} approach for ${2:O(n)} performance.',
-              insertTextRules: monaco.languages.CompletionItemProviderProperty.InsertAsSnippet,
-              documentation: 'Standard optimization for subarray problems.',
+              insertText:
+                '// Hint: Consider using a ${1:sliding window} approach for ${2:O(n)} performance.',
+              insertTextRules:
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               detail: 'InterviewAI Snippet',
-              range: null 
             },
             {
               label: 'binary_search',
@@ -63,21 +73,13 @@ const CodeEditor = ({ code, setCode, language, setLanguage, onSubmit, onRun }) =
                 '    else:',
                 '        right = mid - 1'
               ].join('\n'),
-              insertTextRules: monaco.languages.CompletionItemProviderProperty.InsertAsSnippet,
-              documentation: 'Classic Binary Search implementation.',
+              insertTextRules:
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               detail: 'InterviewAI Snippet',
-              range: null
-            },
-            {
-              label: 'optimize_space',
-              kind: monaco.languages.CompletionItemKind.Keyword,
-              insertText: 'hash_map',
-              documentation: 'Using a hash map can optimize search time to O(1).',
-              detail: 'Optimization Suggestion',
-              range: null
             }
           ];
-          return { suggestions: suggestions };
+
+          return { suggestions };
         }
       });
     });
@@ -93,25 +95,12 @@ const CodeEditor = ({ code, setCode, language, setLanguage, onSubmit, onRun }) =
     minimap: { enabled: false },
     padding: { top: 15 },
     scrollBeyondLastLine: false,
-    cursorSmoothCaretAnimation: "on",
     smoothScrolling: true,
     fontFamily: "'Fira Code', 'JetBrains Mono', monospace",
-    fontLigatures: true,
     bracketPairColorization: { enabled: true },
-    // IntelliSense & Autocomplete stability settings
-    quickSuggestions: {
-      other: true,
-      comments: true,
-      strings: true
-    },
+    quickSuggestions: true,
     suggestOnTriggerCharacters: true,
-    acceptSuggestionOnEnter: "on",
     tabCompletion: "on",
-    wordBasedSuggestions: true,
-    parameterHints: {
-      enabled: true
-    },
-    formatOnType: true,
     autoClosingBrackets: "always",
     autoClosingQuotes: "always",
     folding: true,
@@ -120,30 +109,43 @@ const CodeEditor = ({ code, setCode, language, setLanguage, onSubmit, onRun }) =
 
   return (
     <div className="flex flex-col h-full bg-[#030E17]">
-      <EditorHeader 
-        language={language} 
-        setLanguage={setLanguage} 
-        languages={languages} 
+
+      <EditorHeader
+        language={language}
+        setLanguage={setLanguage}
+        languages={languages}
       />
 
-      {/* Actual Editor */}
-      <div className="flex-1 overflow-hidden relative group">
+      <div className={`flex-1 overflow-hidden relative ${loading ? "opacity-40 pointer-events-none" : ""}`}>
+
+        {/* DIM OVERLAY ONLY */}
+        {loading && (
+          <div className="absolute inset-0 z-50 bg-black/60" />
+        )}
+
         <Editor
           height="100%"
           language={language === 'cpp' ? 'cpp' : language}
           value={code}
           theme="midnight-ai"
           beforeMount={handleEditorWillMount}
-          onChange={(value) => setCode(value)}
-          loading={<div className="flex items-center justify-center h-full text-text-subtle font-mono text-xs animate-pulse italic">Initializing IntelliSense...</div>}
+          onChange={(value) => setCode(value || "")}
+          loading={
+            <div className="flex items-center justify-center h-full text-text-subtle font-mono text-xs">
+              Initializing Editor...
+            </div>
+          }
           options={editorOptions}
         />
       </div>
 
-      <EditorFooter 
-        onRun={onRun} 
-        onSubmit={onSubmit} 
+      <EditorFooter
+        onRun={onRun}
+        onSubmit={onSubmit}
+        runLoading={runLoading}
+        submitLoading={submitLoading}
       />
+
     </div>
   );
 };
