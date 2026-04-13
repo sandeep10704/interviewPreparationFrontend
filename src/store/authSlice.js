@@ -9,7 +9,8 @@ import {
 import { auth, googleProvider } from "../firebase";
 
 const initialState = {
-  user: null,
+  user: JSON.parse(localStorage.getItem("user")) || null,
+  isAuthenticated: !!localStorage.getItem("user"),
   loading: false,
   error: null
 };
@@ -67,30 +68,41 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = serializeUser(action.payload);
+      const user = serializeUser(action.payload);
+      state.user = user;
+      state.isAuthenticated = !!user;
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      } else {
+        localStorage.removeItem("user");
+      }
     }
   },
   extraReducers: (builder) => {
     builder
-
       .addCase(loginWithGoogle.pending, (state) => {
         state.loading = true;
       })
       .addCase(loginWithGoogle.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
         state.loading = false;
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
-
       .addCase(loginWithEmail.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
-
       .addCase(signup.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
-
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+        state.isAuthenticated = false;
+        localStorage.removeItem("user");
       });
   }
 });

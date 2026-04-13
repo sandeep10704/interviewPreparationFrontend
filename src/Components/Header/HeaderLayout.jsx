@@ -1,10 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Typography, Button } from '../Common';
 import NavLink from './Common/NavLink';
+import { logout } from '../../store/authSlice';
 
 const HeaderLayout = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -12,6 +16,10 @@ const HeaderLayout = () => {
     { name: 'Technical', path: '/technical' },
     { name: 'Coding', path: '/coding' },
   ];
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   return (
     <header className="sticky top-0 z-[100] w-full border-b border-border-main/50 bg-background/80 backdrop-blur-md">
@@ -36,15 +44,44 @@ const HeaderLayout = () => {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-4 lg:gap-6">
-          <Link to="/login" className="hidden sm:block text-sm font-bold text-text-subtle hover:text-accent-main transition-colors tracking-wide">
-            Log in
-          </Link>
-          <Link to="/signup">
-            <Button size="md" className="!rounded-full px-7 shadow-[0_8px_20px_-8px_rgba(50,208,200,0.5)] !font-bold">
-              Sign Up
-            </Button>
-          </Link>
+        <div className="flex items-center gap-3 lg:gap-4">
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <Link to="/profile" className="flex items-center gap-3 group">
+                <div className="hidden lg:flex flex-col items-end">
+                  <span className="text-xs font-bold text-text-main group-hover:text-accent-main transition-colors">
+                    {user?.displayName || 'My Profile'}
+                  </span>
+                </div>
+                <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 p-0.5 group-hover:border-accent-main transition-all">
+                  <img 
+                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.email || 'User'}&background=192530&color=26D0CE`} 
+                    className="w-full h-full rounded-[10px] object-cover" 
+                    alt="avatar" 
+                  />
+                </div>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="!text-[10px] !rounded-lg border-white/10 hover:border-error hover:text-error transition-all"
+                onClick={handleLogout}
+              >
+                LOGOUT
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link to="/login" className="hidden sm:block text-xs font-bold text-text-subtle hover:text-accent-main transition-colors tracking-widest uppercase">
+                Login
+              </Link>
+              <Link to="/signup">
+                <Button size="sm" className="!rounded-lg px-6 shadow-[0_8px_20px_-8px_rgba(50,208,200,0.5)] !font-bold !text-[10px] uppercase tracking-widest">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>
