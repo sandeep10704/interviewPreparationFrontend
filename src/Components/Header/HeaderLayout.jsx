@@ -25,13 +25,21 @@ const HeaderLayout = () => {
     <header className="sticky top-0 z-[100] w-full border-b border-border-main/50 bg-background/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-accent-main flex items-center justify-center text-black font-black text-xl group-hover:rotate-6 transition-all duration-300 shadow-[0_0_20px_rgba(50,208,200,0.3)]">
-            A
-          </div>
+
+          <img
+            src="/logo.png"
+            alt="logo"
+            className="h-9 w-9 rounded-lg"
+          />
+
+          
+
           <Typography variant="h3" className="hidden lg:block !text-2xl font-black tracking-tighter">
             Interview<span className="text-accent-main">AI</span>
           </Typography>
+
         </Link>
 
         {/* Navigation Links - Centered */}
@@ -54,16 +62,16 @@ const HeaderLayout = () => {
                   </span>
                 </div>
                 <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 p-0.5 group-hover:border-accent-main transition-all">
-                  <img 
-                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.email || 'User'}&background=192530&color=26D0CE`} 
-                    className="w-full h-full rounded-[10px] object-cover" 
-                    alt="avatar" 
+                  <img
+                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.email || 'User'}&background=192530&color=26D0CE`}
+                    className="w-full h-full rounded-[10px] object-cover"
+                    alt="avatar"
                   />
                 </div>
               </Link>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="!text-[10px] !rounded-lg border-white/10 hover:border-error hover:text-error transition-all"
                 onClick={handleLogout}
               >
