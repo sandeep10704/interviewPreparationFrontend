@@ -6,7 +6,7 @@ const initialState = {
   generating: false,
   generatedSetId: null,
   error: null,
-  status: 'idle' // idle, generating, completed, error
+  status: "idle"
 };
 
 export const generateQuestions = createAsyncThunk(
@@ -15,6 +15,7 @@ export const generateQuestions = createAsyncThunk(
     try {
       const user = auth.currentUser;
       let headers = {};
+
       if (user) {
         const token = await user.getIdToken();
         headers.Authorization = `Bearer ${token}`;
@@ -23,14 +24,12 @@ export const generateQuestions = createAsyncThunk(
       const response = await axios.post(
         "https://ai-interview-preparation-three.vercel.app/coding/questions",
         {
-          difficulty: params.difficulty || "medium",
-          topics: params.topics || [],
-          count: params.count || 5
+          count: params.count || 2,
+          level: params.level || ["medium"]
         },
         { headers }
       );
 
-      // Expecting { set_id: "..." }
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -48,24 +47,24 @@ const codingQuestionSlice = createSlice({
       state.generating = false;
       state.generatedSetId = null;
       state.error = null;
-      state.status = 'idle';
+      state.status = "idle";
     }
   },
   extraReducers: (builder) => {
     builder
       .addCase(generateQuestions.pending, (state) => {
         state.generating = true;
-        state.status = 'generating';
+        state.status = "generating";
         state.error = null;
       })
       .addCase(generateQuestions.fulfilled, (state, action) => {
         state.generating = false;
-        state.status = 'completed';
-        state.generatedSetId = action.payload.set_id;
+        state.status = "completed";
+        state.generatedSetId = action.payload.coding_set_id;
       })
       .addCase(generateQuestions.rejected, (state, action) => {
         state.generating = false;
-        state.status = 'error';
+        state.status = "error";
         state.error = action.payload;
       });
   }
