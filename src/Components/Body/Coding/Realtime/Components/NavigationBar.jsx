@@ -3,7 +3,7 @@ import { Typography } from '../../../../Common';
 import Tag from './Tag';
 import { ListIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
 
-const NavigationBar = ({ currentIndex, totalQuestions, onPrev, onNext }) => {
+const NavigationBar = ({ currentIndex, totalQuestions, onPrev, onNext, mode = "Normal" }) => {
   return (
     <div className="flex items-center justify-between px-6 py-2 border-b border-border-main/20 bg-card/10 backdrop-blur-md z-10 shrink-0">
       <div className="flex items-center gap-6">
@@ -49,7 +49,7 @@ const NavigationBar = ({ currentIndex, totalQuestions, onPrev, onNext }) => {
 
       <div className="flex items-center gap-3">
         <Tag variant="accent" className="!px-3 !py-1 shadow-lg shadow-accent-main/5 animate-pulse-slow">
-          Normal Mode
+          {mode} Mode
         </Tag>
       </div>
     </div>

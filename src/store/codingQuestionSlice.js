@@ -3,42 +3,38 @@ import axios from "axios";
 import { auth } from "../firebase";
 
 const initialState = {
-  loading: false,
-  data: null,
-  error: null
+  generating: false,
+  generatedSetId: null,
+  error: null,
+  status: 'idle' // idle, generating, completed, error
 };
 
-// ==============================
-// GENERATE CODING QUESTIONS
-// ==============================
-export const generateCodingQuestions = createAsyncThunk(
-  "coding/generate",
-  async (_, thunkAPI) => {
+export const generateQuestions = createAsyncThunk(
+  "codingQuestions/generate",
+  async (params, thunkAPI) => {
     try {
       const user = auth.currentUser;
-
-      if (!user) {
-        throw new Error("User not logged in");
+      let headers = {};
+      if (user) {
+        const token = await user.getIdToken();
+        headers.Authorization = `Bearer ${token}`;
       }
 
-      const token = await user.getIdToken();
-
-      const response = await axios.get(
+      const response = await axios.post(
         "https://ai-interview-preparation-three.vercel.app/coding/questions",
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+          difficulty: params.difficulty || "medium",
+          topics: params.topics || [],
+          count: params.count || 5
+        },
+        { headers }
       );
 
+      // Expecting { set_id: "..." }
       return response.data;
-
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error?.response?.data?.detail ||
-        error?.response?.data ||
-        error.message
+        error?.response?.data?.detail || error.message
       );
     }
   }
@@ -47,22 +43,33 @@ export const generateCodingQuestions = createAsyncThunk(
 const codingQuestionSlice = createSlice({
   name: "codingQuestions",
   initialState,
-  reducers: {},
+  reducers: {
+    resetGeneration: (state) => {
+      state.generating = false;
+      state.generatedSetId = null;
+      state.error = null;
+      state.status = 'idle';
+    }
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(generateCodingQuestions.pending, (state) => {
-        state.loading = true;
+      .addCase(generateQuestions.pending, (state) => {
+        state.generating = true;
+        state.status = 'generating';
         state.error = null;
       })
-      .addCase(generateCodingQuestions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.data = action.payload;
+      .addCase(generateQuestions.fulfilled, (state, action) => {
+        state.generating = false;
+        state.status = 'completed';
+        state.generatedSetId = action.payload.set_id;
       })
-      .addCase(generateCodingQuestions.rejected, (state, action) => {
-        state.loading = false;
+      .addCase(generateQuestions.rejected, (state, action) => {
+        state.generating = false;
+        state.status = 'error';
         state.error = action.payload;
       });
   }
 });
 
+export const { resetGeneration } = codingQuestionSlice.actions;
 export default codingQuestionSlice.reducer;
