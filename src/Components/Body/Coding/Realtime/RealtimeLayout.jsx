@@ -9,6 +9,13 @@ import TestResults from "./Components/TestResults";
 import NavigationBar from "./Components/NavigationBar";
 
 import {
+  connectCodingWS,
+  startCoding,
+  startTyping,
+  disconnectCodingWS
+} from "../../../../store/codingWSSlice";
+
+import {
   getCodingSetById,
   setCode,
   setLanguage,
@@ -28,6 +35,9 @@ const RealtimeLayout = () => {
   const dispatch = useDispatch();
   const { setId } = useParams();
 
+  const token = useSelector(state => state.auth.user?.token) || sessionStorage.getItem("token");
+  const connected = useSelector((state) => state.codingWS.connected);
+
   const {
     selectedSet,
     currentIndex,
@@ -43,44 +53,48 @@ const RealtimeLayout = () => {
   } = useSelector((state) => state.codingExecution);
 
   const {
-     suggestionLoading,
-     suggestion,
-     error: suggestionError
+    suggestionLoading,
+    suggestion
   } = useSelector((state) => state.codingRealtime);
 
-  // Resizing logic
+  // FIX 1: Removed duplicate declarations — only one set of these three:
   const [resultsHeight, setResultsHeight] = useState(40);
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef(null);
 
-  const startResizing = useCallback(() => setIsResizing(true), []);
-  const stopResizing = useCallback(() => setIsResizing(false), []);
+  const startResizing = () => setIsResizing(true);
+  const stopResizing = () => setIsResizing(false);
 
-  const onResize = useCallback((e) => {
-    if (!isResizing || !containerRef.current) return;
-    const containerHeight = containerRef.current.offsetHeight;
-    const offsetTop = containerRef.current.getBoundingClientRect().top;
-    const mousePos = e.clientY - offsetTop;
-    const newHeight = ((containerHeight - mousePos) / containerHeight) * 100;
-    if (newHeight > 20 && newHeight < 80) setResultsHeight(newHeight);
+  // FIX 3: onResize moved inside the effect to avoid stale closure on isResizing
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const onResize = (e) => {
+      if (!containerRef.current) return;
+
+      const containerHeight = containerRef.current.offsetHeight;
+      const offsetTop = containerRef.current.getBoundingClientRect().top;
+      const mousePos = e.clientY - offsetTop;
+      const newHeight = ((containerHeight - mousePos) / containerHeight) * 100;
+
+      if (newHeight > 20 && newHeight < 80) {
+        setResultsHeight(newHeight);
+      }
+    };
+
+    window.addEventListener("mousemove", onResize);
+    window.addEventListener("mouseup", stopResizing);
+
+    return () => {
+      window.removeEventListener("mousemove", onResize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
   }, [isResizing]);
 
   useEffect(() => {
-    if (isResizing) {
-      window.addEventListener('mousemove', onResize);
-      window.addEventListener('mouseup', stopResizing);
-    } else {
-      window.removeEventListener('mousemove', onResize);
-      window.removeEventListener('mouseup', stopResizing);
+    if (setId) {
+      dispatch(getCodingSetById(setId));
     }
-    return () => {
-      window.removeEventListener('mousemove', onResize);
-      window.removeEventListener('mouseup', stopResizing);
-    };
-  }, [isResizing, onResize, stopResizing]);
-
-  useEffect(() => {
-    if (setId) dispatch(getCodingSetById(setId));
   }, [setId, dispatch]);
 
   useEffect(() => {
@@ -91,24 +105,75 @@ const RealtimeLayout = () => {
   const currentQuestion = selectedSet?.questions?.[currentIndex];
   const code = codesByQuestion[currentIndex] || "";
 
+  // FIX 4: Use a ref so getCode always returns the latest code value
+  const codeRef = useRef(code);
+  useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
+
+  // FIX 2: Removed backtick fences — plain JS inside useEffect bodies
+  /* CONNECT WS */
+  /* CONNECT WS */
+  useEffect(() => {
+    if (!token || !setId) return;
+
+    dispatch(connectCodingWS(token));
+
+  }, [token, setId]);
+
+//   useEffect(() => {
+//   return () => {
+//     dispatch(disconnectCodingWS());
+//   };
+// }, []);
+
+  /* START AFTER CONNECT */
+  useEffect(() => {
+    if (!connected || !currentQuestion) return;
+
+    dispatch(startCoding({
+      coding_set_id: setId,
+      question_no: currentIndex
+    }));
+
+    dispatch(startTyping({
+      coding_set_id: setId,
+      question_no: currentIndex,
+      getCode: () => codeRef.current   // FIX 4: always reads latest code
+    }));
+  }, [connected, currentIndex, currentQuestion, dispatch]);
+
   const handleGetSuggestion = () => {
-     dispatch(getSuggestion({
-        code,
-        language,
-        question: currentQuestion?.description || currentQuestion?.title
-     }));
+    dispatch(getSuggestion({
+      code,
+      language,
+      question:
+        currentQuestion?.description ||
+        currentQuestion?.title
+    }));
   };
 
+  // FIX 2: Removed backtick fences from useMemo body
   const { results, isSubmission } = useMemo(() => {
     const rawResult = submitResult || runResult;
-    if (!rawResult) return { results: [], isSubmission: false };
-    
-    const cases = rawResult.results || rawResult.cases || rawResult.data || [];
+    if (!rawResult) {
+      return { results: [], isSubmission: false };
+    }
+
+    const cases =
+      rawResult.results ||
+      rawResult.cases ||
+      rawResult.data ||
+      [];
+
     return {
       results: cases.map((r, i) => ({
         id: i,
         passed: r.passed ?? r.status === "passed",
-        userOutput: r.output ?? r.stdout ?? r.userOutput
+        userOutput:
+          r.output ??
+          r.stdout ??
+          r.userOutput
       })),
       isSubmission: !!submitResult
     };
@@ -116,10 +181,17 @@ const RealtimeLayout = () => {
 
   const showResults = results.length > 0;
 
-  if (!currentQuestion) return <div className="p-20 text-center"><Typography>Loading session...</Typography></div>;
+  if (!currentQuestion) {
+    return (
+      <div className="p-20 text-center">
+        <Typography>Loading session...</Typography>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] w-full bg-background overflow-hidden text-left relative">
+
       <NavigationBar
         currentIndex={currentIndex}
         totalQuestions={selectedSet?.questions?.length}
@@ -129,24 +201,47 @@ const RealtimeLayout = () => {
       />
 
       <div className="flex flex-1 overflow-hidden">
+
         <div className="w-[45%] min-w-[350px] border-r border-border-main/20 bg-[#01080E]">
           <ProblemDescription question={currentQuestion} />
         </div>
 
-        <div ref={containerRef} className={`flex-1 flex flex-col bg-[#030E17] relative ${isResizing ? 'cursor-row-resize' : ''}`}>
-          {isResizing && <div className="absolute inset-0 z-[100] cursor-row-resize bg-transparent" />}
+        <div
+          ref={containerRef}
+          className={`flex-1 flex flex-col bg-[#030E17] relative ${isResizing ? "cursor-row-resize" : ""}`}
+        >
 
-          <div 
-            className="shrink-0 min-h-0 relative overflow-hidden transition-height duration-0" 
-            style={{ height: showResults ? `${100 - resultsHeight}%` : '100%' }}
+          <div
+            className="shrink-0 min-h-0 relative overflow-hidden"
+            style={{
+              height: showResults ? `${100 - resultsHeight}%` : "100%"
+            }}
           >
             <CodeEditor
               code={code}
               setCode={(val) => dispatch(setCode(val))}
               language={language}
               setLanguage={(val) => dispatch(setLanguage(val))}
-              onRun={() => dispatch(runCode({ coding_set_id: setId, question_no: currentIndex, code, language }))}
-              onSubmit={() => dispatch(submitCode({ coding_set_id: setId, question_index: currentIndex, code, language }))}
+              onRun={() =>
+                dispatch(
+                  runCode({
+                    coding_set_id: setId,
+                    question_no: currentIndex,
+                    code,
+                    language
+                  })
+                )
+              }
+              onSubmit={() =>
+                dispatch(
+                  submitCode({
+                    coding_set_id: setId,
+                    question_index: currentIndex,
+                    code,
+                    language
+                  })
+                )
+              }
               onSuggest={handleGetSuggestion}
               runLoading={runLoading}
               submitLoading={submitLoading}
@@ -156,29 +251,40 @@ const RealtimeLayout = () => {
           </div>
 
           {showResults && (
-            <div className="flex-1 flex flex-col border-t border-border-main/30 bg-[#01080E] relative min-h-0" style={{ height: `${resultsHeight}%` }}>
-              <div className="absolute -top-1.5 left-0 right-0 h-3 cursor-row-resize z-[110] group flex items-center justify-center" onMouseDown={startResizing}>
-                <div className="w-full h-[1px] bg-border-main/20 group-hover:bg-accent-main/50 transition-colors"></div>
-                <div className="absolute w-12 h-1 rounded-full bg-border-main/40 group-hover:bg-accent-main group-hover:w-16 transition-all shadow-[0_0_10px_rgba(50,208,200,0.4)]"></div>
+            <>
+              {/* Drag handle */}
+              <div
+                className="h-1 cursor-row-resize bg-border-main/30 hover:bg-border-main/60 transition-colors"
+                onMouseDown={startResizing}
+              />
+              <div
+                className="flex-1 flex flex-col bg-[#01080E]"
+                style={{ height: `${resultsHeight}%` }}
+              >
+                <TestResults
+                  testCases={currentQuestion.test_cases}
+                  results={results}
+                  isSubmission={isSubmission}
+                  loading={runLoading || submitLoading}
+                />
               </div>
-              <div className="flex-1 overflow-hidden">
-                <TestResults testCases={currentQuestion.test_cases} results={results} isSubmission={isSubmission} loading={runLoading || submitLoading} />
-              </div>
-            </div>
+            </>
           )}
+
         </div>
       </div>
 
-      <Modal isOpen={!!suggestion} onClose={() => dispatch(clearSuggestion())} title="AI Code Suggestion" maxWidth="600px">
-         <div className="space-y-4">
-            <Typography variant="body" className="text-text-main leading-relaxed whitespace-pre-wrap font-mono text-sm bg-white/5 p-6 rounded-2xl border border-white/10">
-               {suggestion?.hint || suggestion?.text || suggestion?.data || JSON.stringify(suggestion, null, 2)}
-            </Typography>
-            <div className="flex justify-end">
-               <button onClick={() => dispatch(clearSuggestion())} className="px-6 py-2 rounded-xl bg-accent-main text-black font-black hover:scale-105 transition-all">Got it</button>
-            </div>
-         </div>
+      <Modal
+        isOpen={!!suggestion}
+        onClose={() => dispatch(clearSuggestion())}
+        title="AI Code Suggestion"
+        maxWidth="600px"
+      >
+        <Typography className="whitespace-pre-wrap">
+          {suggestion?.hint || JSON.stringify(suggestion, null, 2)}
+        </Typography>
       </Modal>
+
     </div>
   );
 };

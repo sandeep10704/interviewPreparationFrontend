@@ -28,13 +28,13 @@ const CodingLayout = () => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showGenModal, setShowGenModal] = useState(false);
   const [countdown, setCountdown] = useState(300);
-
+  
   // default easy
   const [config, setConfig] = useState({
     difficulty: "easy",
     count: 1
   });
-
+  
   useEffect(() => {
     if (mode) dispatch(getCodingSets());
   }, [mode, dispatch]);

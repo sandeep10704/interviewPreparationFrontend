@@ -15,17 +15,22 @@ const initialState = {
  error: null
 };
 
-// serialize user
-const serializeUser = (user) => {
+
+// serialize user + token
+const serializeUser = async (user) => {
  if (!user) return null;
+
+ const token = await user.getIdToken();
 
  return {
   uid: user.uid,
   email: user.email,
   displayName: user.displayName,
-  photoURL: user.photoURL
+  photoURL: user.photoURL,
+  token
  };
 };
+
 
 // Google Login
 export const loginWithGoogle = createAsyncThunk(
@@ -33,12 +38,13 @@ export const loginWithGoogle = createAsyncThunk(
  async (_, { rejectWithValue }) => {
   try {
    const res = await signInWithPopup(auth, googleProvider);
-   return serializeUser(res.user);
+   return await serializeUser(res.user);
   } catch (err) {
    return rejectWithValue(err.message);
   }
  }
 );
+
 
 // Email Login
 export const loginWithEmail = createAsyncThunk(
@@ -46,12 +52,13 @@ export const loginWithEmail = createAsyncThunk(
  async ({ email, password }, { rejectWithValue }) => {
   try {
    const res = await signInWithEmailAndPassword(auth, email, password);
-   return serializeUser(res.user);
+   return await serializeUser(res.user);
   } catch (err) {
    return rejectWithValue(err.message);
   }
  }
 );
+
 
 // Signup
 export const signup = createAsyncThunk(
@@ -59,12 +66,13 @@ export const signup = createAsyncThunk(
  async ({ email, password }, { rejectWithValue }) => {
   try {
    const res = await createUserWithEmailAndPassword(auth, email, password);
-   return serializeUser(res.user);
+   return await serializeUser(res.user);
   } catch (err) {
    return rejectWithValue(err.message);
   }
  }
 );
+
 
 // Logout
 export const logout = createAsyncThunk(
@@ -75,22 +83,26 @@ export const logout = createAsyncThunk(
  }
 );
 
+
 const authSlice = createSlice({
  name: "auth",
  initialState,
+
  reducers: {
   setUser: (state, action) => {
-   const user = serializeUser(action.payload);
-   state.user = user;
-   state.isAuthenticated = !!user;
+   state.user = action.payload;
+   state.isAuthenticated = !!action.payload;
 
-   if (user) {
-    localStorage.setItem("user", JSON.stringify(user));
+   if (action.payload) {
+    localStorage.setItem("user", JSON.stringify(action.payload));
+    sessionStorage.setItem("token", action.payload.token);
    } else {
     localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
    }
   }
  },
+
  extraReducers: (builder) => {
   builder
 
@@ -99,36 +111,59 @@ const authSlice = createSlice({
     state.loading = true;
     state.error = null;
    })
+
    .addCase(loginWithGoogle.fulfilled, (state, action) => {
     state.loading = false;
     state.user = action.payload;
     state.isAuthenticated = true;
+
     localStorage.setItem("user", JSON.stringify(action.payload));
+    sessionStorage.setItem("token", action.payload.token);
    })
+
    .addCase(loginWithGoogle.rejected, (state, action) => {
     state.loading = false;
     state.error = action.payload;
    })
 
+
    // EMAIL
+   .addCase(loginWithEmail.pending, (state) => {
+    state.loading = true;
+   })
+
    .addCase(loginWithEmail.fulfilled, (state, action) => {
+    state.loading = false;
     state.user = action.payload;
     state.isAuthenticated = true;
+
     localStorage.setItem("user", JSON.stringify(action.payload));
+    sessionStorage.setItem("token", action.payload.token);
    })
+
+   .addCase(loginWithEmail.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+   })
+
 
    // SIGNUP
    .addCase(signup.fulfilled, (state, action) => {
     state.user = action.payload;
     state.isAuthenticated = true;
+
     localStorage.setItem("user", JSON.stringify(action.payload));
+    sessionStorage.setItem("token", action.payload.token);
    })
+
 
    // LOGOUT
    .addCase(logout.fulfilled, (state) => {
     state.user = null;
     state.isAuthenticated = false;
+
     localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
    });
  }
 });
