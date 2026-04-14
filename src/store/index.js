@@ -8,6 +8,8 @@ import playgroundReducer from "./playgroundSlice";
 import codingReducer from "./codingSlice";
 import codingRealtimeReducer from "./codingRealtimeSlice";
 import userReducer from "./userSlice";
+import sarvamReducer from "./sarvamSlice";
+import codingWSReducer from "./codingWSSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -18,6 +20,9 @@ export const store = configureStore({
     codingRealtime: codingRealtimeReducer,
     playground: playgroundReducer,
     coding: codingReducer,
-    user: userReducer
+    user: userReducer,
+    sarvam: sarvamReducer,
+    codingWS: codingWSReducer
+
   }
 });
