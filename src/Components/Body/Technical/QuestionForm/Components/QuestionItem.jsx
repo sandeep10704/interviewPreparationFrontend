@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography } from "../../../Common";
+import { Typography } from "../../../../Common";
 
 const QuestionItem = ({ question, index, answer, onAnswerChange, showFeedback, disabled }) => {
   return (
