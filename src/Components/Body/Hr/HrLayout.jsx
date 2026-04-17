@@ -1,67 +1,44 @@
-import { useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import React from "react";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { Typography } from "../../Common";
+import HrHero from "./Components/HrHero";
+import GenerateHrCard from "./Components/GenerateHrCard";
+import HrSetCard from "./Components/HrSetCard";
 
 const HrLayout = () => {
   const navigate = useNavigate();
-  const [selectedSet, setSelectedSet] = useState(null);
+  const location = useLocation();
+  const isArenaRoot = location.pathname === "/hr" || location.pathname === "/hr/";
 
-  // example set ids (you can fetch from backend)
-  const sets = ["hr-101", "hr-102", "hr-103"];
+  // Simple numeric sets for HR Arena
+  const hrSets = [1, 2, 3, 4, 5, 6];
 
-  const openPopup = (id) => {
-    setSelectedSet(id);
-  };
-
-  const goTo = (type) => {
-    navigate(`/hr/${selectedSet}/${type}`);
-    setSelectedSet(null);
-  };
+  if (!isArenaRoot) return <Outlet />;
 
   return (
-    <div>
-      <h2>HR Sets</h2>
+    <div className="w-full min-h-screen bg-[#01080E] px-6 lg:px-20 py-12 space-y-12 animate-fade-in relative overflow-hidden text-left font-inter">
+      <div className="relative z-10 space-y-12 max-w-7xl mx-auto">
+        <HrHero />
+        
+        <GenerateHrCard onGenerate={() => navigate(`/hr/hr-new/question-form`)} />
 
-      {sets.map((id) => (
-        <button key={id} onClick={() => openPopup(id)}>
-          {id}
-        </button>
-      ))}
-
-      {selectedSet && (
-        <div style={{
-          position: "fixed",
-          top: "40%",
-          left: "40%",
-          background: "white",
-          padding: "20px",
-          border: "1px solid black"
-        }}>
-          <h4>Select Type</h4>
-
-          <button onClick={() => goTo("question-form")}>
-            Question Form
-          </button>
-
-          <button onClick={() => goTo("one-question")}>
-            One Question
-          </button>
-
-          <button onClick={() => goTo("realtime")}>
-            Realtime
-          </button>
-
-          <button onClick={() => goTo("realtime-one")}>
-            Realtime One
-          </button>
-
-          <br />
-          <button onClick={() => setSelectedSet(null)}>
-            Close
-          </button>
+        {/* Section Label */}
+        <div className="flex items-center gap-4">
+           <Typography variant="h4" className="!mb-0 uppercase tracking-[0.4em] text-[10px] font-black text-accent-main opacity-50">Behavioral Protocols</Typography>
+           <div className="flex-1 h-px bg-gradient-to-r from-accent-main/20 via-white/5 to-transparent"></div>
         </div>
-      )}
 
-      <Outlet />
+        {/* Sets Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           {hrSets.map((setNum, index) => (
+             <HrSetCard 
+                key={setNum} 
+                index={index} 
+                onClick={() => navigate(`/hr/hr-${setNum}/question-form`)} 
+             />
+           ))}
+        </div>
+      </div>
     </div>
   );
 };
