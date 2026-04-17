@@ -1,5 +1,9 @@
+import React, { useEffect } from "react";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { onIdTokenChanged } from "firebase/auth";
+import { auth } from "./firebase";
+import { setUser } from "./store/authSlice";
 
 import HeaderLayout from "./Components/Header/HeaderLayout";
 import FooterLayout from "./Components/Footer/FooterLayout";
@@ -12,6 +16,27 @@ const Layout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
+
+  // Robust Token Refresh Listener
+  useEffect(() => {
+    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const token = await firebaseUser.getIdToken();
+        const serialized = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          token
+        };
+        dispatch(setUser(serialized));
+      } else {
+        dispatch(setUser(null));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
 
   const publicRoutes = [
     "/",
@@ -26,9 +51,13 @@ const Layout = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const hideLayout =
-    location.pathname === "/login" ||
-    location.pathname === "/signup";
+  const hideLayout = [
+    "/login",
+    "/signup",
+    "/realtime",
+    "/realtime-one",
+    "/playground"
+  ].some(path => location.pathname.includes(path));
 
   if (hideLayout) {
     return <Outlet />;

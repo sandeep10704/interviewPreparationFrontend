@@ -11,6 +11,7 @@ import userReducer from "./userSlice";
 import sarvamReducer from "./sarvamSlice";
 import codingWSReducer from "./codingWSSlice";
 import technicalReducer from "./technicalSlice";
+import hrReducer from "./hrSlice";
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,6 @@ export const store = configureStore({
     sarvam: sarvamReducer,
     codingWS: codingWSReducer,
     technical: technicalReducer,
-
+    hr: hrReducer,
   }
 });
