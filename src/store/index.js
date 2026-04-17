@@ -10,6 +10,8 @@ import codingRealtimeReducer from "./codingRealtimeSlice";
 import userReducer from "./userSlice";
 import sarvamReducer from "./sarvamSlice";
 import codingWSReducer from "./codingWSSlice";
+import technicalReducer from "./technicalSlice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -22,7 +24,8 @@ export const store = configureStore({
     coding: codingReducer,
     user: userReducer,
     sarvam: sarvamReducer,
-    codingWS: codingWSReducer
+    codingWS: codingWSReducer,
+    technical: technicalReducer,
 
   }
 });
