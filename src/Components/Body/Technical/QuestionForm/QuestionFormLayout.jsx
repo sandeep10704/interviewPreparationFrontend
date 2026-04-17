@@ -1,57 +1,56 @@
-import React, { useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Typography, Button } from "../../../Common";
+import { getTechnicalSetById, submitTechnicalAnswers, resetSelectedSet } from "../../../../store/technicalSlice";
 import QuestionItem from "./Components/QuestionItem";
 
 const QuestionFormLayout = () => {
   const { setId } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
-  const viewFeedbackOnly = searchParams.get("view") === "feedback";
+  const dispatch = useDispatch();
 
+  const { selectedSet, loading, evaluation, error } = useSelector((state) => state.technical);
   const [answers, setAnswers] = useState({});
-  const [isEvaluationRunning, setIsEvaluationRunning] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(viewFeedbackOnly);
 
-  // Static Mock Questions for UI demonstration
-  const mockQuestions = [
-    { 
-      id: "q1", 
-      question: "Explicate the concept of closures in JavaScript and provide a practical use case.",
-      feedback: "Your explanation of lexical scope is excellent! Closures are fundamental for data privacy (private variables) and functional patterns like currying."
-    },
-    { 
-      id: "q2", 
-      question: "Compare and contrast SQL and NoSQL databases in terms of horizontal scalability.",
-      feedback: "Correct! While SQL is traditionally vertical, modern sharding allows horizontal growth. NoSQL, however, is designed for native horizontal partitioning."
-    },
-    { 
-      id: "q3", 
-      question: "How does the 'this' keyword behave differently in arrow functions vs regular functions?",
-      feedback: "Perfect description of lexical binding. Arrow functions inherit 'this' from their parent scope, making them ideal for modern class components and callbacks."
+  useEffect(() => {
+    if (setId) {
+      dispatch(getTechnicalSetById(setId));
     }
-  ];
+    return () => {
+       dispatch(resetSelectedSet());
+    };
+  }, [setId, dispatch]);
 
-  const handleAnswerChange = (qId, value) => {
-    setAnswers(prev => ({ ...prev, [qId]: value }));
+  const handleAnswerChange = (qIndex, value) => {
+    setAnswers(prev => ({ ...prev, [qIndex]: value }));
   };
 
   const handleSubmit = () => {
     if (Object.keys(answers).length === 0) return;
-    setIsEvaluationRunning(true);
     
-    // Simulate Synthesis Delay
-    setTimeout(() => {
-      setIsEvaluationRunning(false);
-      setIsSubmitted(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2000);
+    // Map numerical indices to expected answer format if necessary
+    // OpenAPI says answers is a dictionary { additionalProperties: string }
+    dispatch(submitTechnicalAnswers({
+       technical_set_id: setId,
+       answers: answers
+    }));
   };
 
+  if (loading && !selectedSet) {
+     return (
+        <div className="w-full min-h-screen bg-[#01080E] flex items-center justify-center">
+           <div className="w-12 h-12 border-4 border-accent-main/20 border-t-accent-main rounded-full animate-spin"></div>
+        </div>
+     );
+  }
+
+  const questions = selectedSet?.questions || [];
+  const isSubmitted = !!evaluation;
+
   return (
-    <div className="w-full min-h-screen bg-[#01080E] px-6 lg:px-20 py-12 space-y-12 animate-fade-in text-left relative">
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="w-full min-h-screen bg-[#01080E] px-6 lg:px-20 py-12 space-y-12 animate-fade-in text-left relative overflow-hidden">
+      <div className="max-w-4xl mx-auto space-y-12 relative z-10">
         {/* Header */}
         <div className="flex flex-col space-y-4">
            <div className="flex items-center justify-between">
@@ -70,40 +69,51 @@ const QuestionFormLayout = () => {
            
            <div className="flex items-center gap-4">
                <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-text-subtle uppercase tracking-widest">
-                  Technical Set: {setId.toUpperCase()}
+                  Technical Set: {setId?.toUpperCase()}
                </div>
                {isSubmitted && (
                   <div className="px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-[10px] font-black text-violet-400 uppercase tracking-widest">
-                     Session Archived
+                     Session Evaluated
                   </div>
                )}
            </div>
         </div>
 
+        {error && (
+           <div className="p-4 rounded-2xl bg-error/10 border border-error/20 text-error text-xs font-bold uppercase tracking-widest text-center">
+              System Error: {typeof error === 'string' ? error : "Authentication or Synthesis Failure"}
+           </div>
+        )}
+
         {/* Questions List */}
         <div className="space-y-10 text-left">
-           {mockQuestions.map((q, index) => (
-              <QuestionItem
-                key={q.id}
-                question={q}
-                index={index}
-                answer={answers[q.id]}
-                onAnswerChange={(val) => handleAnswerChange(q.id, val)}
-                showFeedback={isSubmitted}
-                disabled={isEvaluationRunning}
-              />
-           ))}
+           {questions.map((q, index) => {
+              const questionContent = typeof q === 'string' ? q : q.question || q.text;
+              const feedback = evaluation?.feedback?.[index] || evaluation?.feedback; // Logic depends on backend feedback format
+              
+              return (
+                 <QuestionItem
+                   key={index}
+                   question={{ question: questionContent, feedback: feedback }}
+                   index={index}
+                   answer={answers[index]}
+                   onAnswerChange={(val) => handleAnswerChange(index, val)}
+                   showFeedback={isSubmitted}
+                   disabled={loading}
+                 />
+              );
+           })}
         </div>
 
         {/* Action Button */}
-        {!isSubmitted && (
+        {!isSubmitted && questions.length > 0 && (
            <div className="flex justify-center pt-8">
               <Button 
                 onClick={handleSubmit}
-                disabled={isEvaluationRunning}
-                className={`!rounded-3xl px-16 py-6 font-black tracking-widest shadow-2xl transition-all bg-accent-main shadow-accent-main/30`}
+                disabled={loading}
+                className="!rounded-3xl px-16 py-6 font-black tracking-widest shadow-2xl transition-all bg-accent-main shadow-accent-main/30"
               >
-                {isEvaluationRunning ? "SYNTHESIZING FEEDBACK..." : "SUBMIT FOR EVALUATION"}
+                {loading ? "SYNTHESIZING FEEDBACK..." : "SUBMIT FOR EVALUATION"}
               </Button>
            </div>
         )}

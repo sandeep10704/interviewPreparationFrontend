@@ -1,41 +1,44 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Typography, Button } from "../../../Common";
+import { submitHRAnswers, resetHRSession } from "../../../../store/hrSlice";
 import HrQuestionItem from "./Components/HrQuestionItem";
 
 const QuestionFormLayout = () => {
   const { setId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
+  const { selectedSet, loading, error } = useSelector((state) => state.hr);
   const [answers, setAnswers] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Static Mock Questions for UI demonstration
-  const mockQuestions = [
-    { id: "q1", question: "Describe a situation where you had to resolve a conflict within a team. What were your specific actions?" },
-    { id: "q2", question: "Tell me about a time you failed to meet a deadline. What did you learn from the experience?" },
-    { id: "q3", question: "Why do you want to work for our organization specifically?" }
-  ];
+  // Use the questions from the selectedSet (generated in the dashboard)
+  // or fall back to an empty list
+  const questions = selectedSet?.questions || [];
 
-  const handleAnswerChange = (qId, value) => {
-    setAnswers(prev => ({ ...prev, [qId]: value }));
+  const handleAnswerChange = (qIndex, value) => {
+    setAnswers(prev => ({ ...prev, [qIndex]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (Object.keys(answers).length === 0) return;
-    setIsSubmitting(true);
     
-    // Simulate Submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      alert("Behavioral responses recorded successfully.");
-      navigate("/hr");
-    }, 1500);
+    // According to OpenAPI, HR answers must be a dictionary { additionalProperties: string }
+    const resultAction = await dispatch(submitHRAnswers({
+       hr_set_id: setId,
+       answers: answers
+    }));
+
+    if (submitHRAnswers.fulfilled.match(resultAction)) {
+       dispatch(resetHRSession());
+       navigate("/hr");
+    }
   };
 
   return (
     <div className="w-full min-h-screen bg-[#01080E] px-6 lg:px-20 py-12 space-y-12 animate-fade-in text-left relative font-inter">
-      <div className="max-w-4xl mx-auto space-y-12">
+      <div className="max-w-4xl mx-auto space-y-12 relative z-10">
         {/* Header */}
         <div className="flex flex-col space-y-4">
            <div className="flex items-center justify-between">
@@ -53,34 +56,52 @@ const QuestionFormLayout = () => {
            </Typography>
            
            <div className="inline-flex px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-text-subtle uppercase tracking-widest">
-              HR Set: {setId.toUpperCase()}
+              HR Set: {setId?.toUpperCase()}
            </div>
         </div>
 
+        {error && (
+           <div className="p-4 rounded-2xl bg-error/10 border border-error/20 text-error text-xs font-bold uppercase tracking-widest text-center">
+              System Error: {typeof error === 'string' ? error : "Submission Failure"}
+           </div>
+        )}
+
         {/* Questions List */}
         <div className="space-y-10">
-           {mockQuestions.map((q, index) => (
-              <HrQuestionItem
-                key={q.id}
-                question={q}
-                index={index}
-                answer={answers[q.id]}
-                onAnswerChange={(val) => handleAnswerChange(q.id, val)}
-                disabled={isSubmitting}
-              />
-           ))}
+           {questions.length > 0 ? (
+              questions.map((q, index) => {
+                 const questionText = typeof q === 'string' ? q : q.question || q.text;
+                 return (
+                    <HrQuestionItem
+                      key={index}
+                      question={{ question: questionText }}
+                      index={index}
+                      answer={answers[index]}
+                      onAnswerChange={(val) => handleAnswerChange(index, val)}
+                      disabled={loading}
+                    />
+                 );
+              })
+           ) : (
+              <div className="py-20 text-center border border-dashed border-white/10 rounded-[48px]">
+                 <Typography className="text-text-subtle opacity-40 uppercase tracking-widest font-black text-xs">Awaiting Neural Synthesis...</Typography>
+                 <Typography className="text-[10px] text-accent-main mt-4">If questions do not appear, please generate a new session.</Typography>
+              </div>
+           )}
         </div>
 
         {/* Action Button */}
-        <div className="flex justify-center pt-8">
-            <Button 
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="!rounded-3xl px-16 py-6 font-black tracking-widest shadow-2xl transition-all shadow-accent-main/30"
-            >
-              {isSubmitting ? "RECORDING RESPONSES..." : "FINALIZE HR SESSION"}
-            </Button>
-        </div>
+        {questions.length > 0 && (
+           <div className="flex justify-center pt-8">
+              <Button 
+                onClick={handleSubmit}
+                disabled={loading}
+                className="!rounded-3xl px-16 py-6 font-black tracking-widest shadow-2xl transition-all shadow-accent-main/30"
+              >
+                {loading ? "RECORDING RESPONSES..." : "FINALIZE HR SESSION"}
+              </Button>
+           </div>
+        )}
       </div>
     </div>
   );
