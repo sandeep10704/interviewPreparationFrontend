@@ -28,7 +28,6 @@ const TechnicalLayout = () => {
        console.log("Synthesis Success:", resultAction.payload);
        const newSetId = resultAction.payload.technical_set_id;
        if (newSetId) {
-          // Default to question form for new generations
           navigate(`/technical/${newSetId}/question-form`);
        } else {
           console.error("Critical: technical_set_id missing from response.");
@@ -60,17 +59,17 @@ const TechnicalLayout = () => {
 
         {/* Section Label */}
         <div className="flex items-center gap-4">
-           <Typography variant="h4" className="!mb-0 uppercase tracking-[0.4em] text-[10px] font-black text-accent-main opacity-50">Operational Sets</Typography>
+           <Typography variant="h4" className="!mb-0 uppercase tracking-[0.4em] text-[10px] font-black text-accent-main opacity-50">Operational Protocol Sets</Typography>
            <div className="flex-1 h-px bg-gradient-to-r from-accent-main/20 via-white/5 to-transparent"></div>
         </div>
 
-        {/* Loading State or Sets Grid */}
+        {/* Sets Grid */}
         {loading ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-              {[1, 2, 3, 4].map(i => (
-                 <div key={i} className="h-80 rounded-[40px] bg-white/5 border border-white/10"></div>
-              ))}
-           </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-96 rounded-[40px] bg-white/5 border border-white/10"></div>
+                ))}
+            </div>
         ) : sets.length > 0 ? (
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {sets.map((set, index) => (
@@ -79,14 +78,15 @@ const TechnicalLayout = () => {
                    set={{ ...set, id: set.technical_set_id }} 
                    index={index} 
                    onStandard={() => navigateToMode(set, "question-form")}
+                   onOneByOne={() => navigateToMode(set, "one-question")}
                    onRealtime={() => navigateToMode(set, "realtime")}
                 />
               ))}
            </div>
         ) : (
-           <div className="py-20 text-center border border-dashed border-white/10 rounded-[48px]">
-              <Typography className="text-text-subtle opacity-40 uppercase tracking-widest font-black text-xs">No active sessions localized</Typography>
-           </div>
+            <div className="py-20 text-center border border-dashed border-white/10 rounded-[48px]">
+                <Typography className="text-text-subtle opacity-40 uppercase tracking-widest font-black text-xs">No active sessions localized</Typography>
+            </div>
         )}
       </div>
     </div>
