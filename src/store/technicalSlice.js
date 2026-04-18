@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "https://aiinterviewpreparation.onrender.com";
+const API_URL = "https://ai-interview-preparation-three.vercel.app";
 
 // Generalized token retriever
 const getAuthHeaders = (thunkAPI) => {
